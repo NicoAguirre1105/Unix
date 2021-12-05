@@ -1,0 +1,83 @@
+#!/bin/bash
+
+suffix=
+var_sign=false
+var_v=false
+var_d=false
+var_sign=false
+error=
+
+for i in "$@"
+do
+    if [[ "$i" == "-"* ]]
+    then
+	case $i in
+	-h)
+	    echo "This sript change the suffix of a list of files or names. It needs a suffix and a list of files"
+	    echo "Script acepts this options:"
+	    echo "-h     Help/Information about the script"
+	    echo "-d     Prints old files names and new files names (with suffix) without renaming files."
+	    echo "-v     Print old files names and new files names renaming them."
+	    echo "--     Separator between options and arguments."
+	    echo "If you dont choose any option, the script renames all files silently"
+	    exit 0
+	;;
+	-v)
+	    var_v=true
+	;;
+	-d)
+	    var_d=true
+	;;
+	--)
+	    break
+	;;
+	*)
+	    echo "ERROR"
+	    echo "You have typed an invalid option" >&2
+	    exit 2
+	;;
+	esac
+    fi
+done
+
+for i in "$@"
+do
+    if [[ "$i" != "-"* ]] || [[ $var_sign == true ]]
+    then
+	if [[ -z $suffix ]]
+	then
+	    suffix=$i
+	else
+	    file_name="${i%.*}"
+	    ext="${i#"$file_name"}"
+	    name="$file_name$suffix$ext"
+	    if [[ $var_v == true ]] || [[ $var_d == true ]]
+	    then
+		echo "$i -----> $name"
+		if [[ $var_v == true ]]
+		then
+		    if ! mv -- "$i" "$name"
+		    then
+			error=1
+		    fi
+		fi
+	    else
+		if ! mv -- "$i" "$name"
+		then
+		    error=1
+		fi
+	    fi
+	fi
+    elif [[ "$i" == "--" ]]
+    then
+	var_sign=true
+    fi
+done
+
+if [ -z $suffix ]
+then
+    echo "There is no suffix typed" >&2
+    exit 2
+else
+    exit 0
+fi

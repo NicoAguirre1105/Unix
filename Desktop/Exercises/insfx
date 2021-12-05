@@ -1,0 +1,91 @@
+#!/bin/bash
+
+var_d=
+var_v=
+var_sign=
+suffix=
+directory=
+find_command=("find")
+
+for i in "$@"
+do
+    if [[ "$i" == "-"* ]] && [[ -z $var_sign ]]
+    then
+	case $i in
+	-h)
+	    echo "This sript change the suffix of a list of files or names. It needs a suffix and a list of files"
+	    echo "Script acepts this options:"
+	    echo "-h     Help/Information about the script"
+	    echo "-d     Prints old files names and new files names (with suffix) without renaming files."
+	    echo "-v     Print old files names and new files names renaming them."
+	    echo "--     Separator between options and arguments."
+	    echo "If you dont choose any option, the script renames all files silently"
+	    exit 0
+	;;
+	-d)
+	    var_d=1
+	;;
+	-v)
+	    var_v=1
+	;;
+	--)
+	    break
+	;;
+	*)
+	    echo "ERROR"
+	    echo "$i is a wrong option" >&2
+	    echo "insfx [-h] [-d] [-v] [--] sfx directory mask1 [mask2] ..."
+	    exit 2
+	;;
+	esac
+    fi
+done
+
+for i in "$@"
+do
+    if [[ "$i" != "-"* ]] || [[ ! -z $var_sign ]]
+    then
+	if [[ -z $suffix ]]
+	then
+	    suffix=$i
+	elif [[ -z $directory ]]
+	then
+	    directory=$i
+	else
+	    if [[ ${#find_command[@]} -gt 1 ]]
+	    then
+		find_command+=("-o")
+	    fi
+	    find_command+=("-name" "$i")
+	fi
+    elif [[ "$i" == "--" ]]
+    then
+	var_sign=1
+    fi
+    shift
+done
+
+if [[ -d $directory ]]
+then
+    "${find_command[@]}" | sort -u | while read file
+	do
+	    aux=${file##*"/"}
+	    aux1=${file%"$aux"}
+	    file_name=${aux%.*}
+	    ext=${file#*"$file_name"}
+	    if [[ ! -z $var_d ]] || [[ ! -z $var_v ]]
+	    then
+		echo "$file ------> $aux1$file_name$suffix$ext"
+		if [[ ! -z $var_v ]]
+		then
+		    mv -- "$file" "$file_name$suffix$ext"
+		fi
+	    else
+		mv -- "$file" "$file_name$suffix$ext"
+	    fi
+	done
+else
+    echo "ERROR"
+    echo "Directory $directory does not exist" >&2
+    exit 2
+fi

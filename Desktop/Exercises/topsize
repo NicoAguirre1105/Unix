@@ -1,0 +1,99 @@
+#!/bin/bash
+
+number_files=
+min_size=1
+human="-b"
+human1="-n"
+directory=`pwd`
+var_sign=false
+var_dir=false
+comparison='^[0-9]+$'
+unit=(K M G T)
+
+if [[ ${#@} -gt 7 ]]
+then
+    echo "ERROR"
+    echo "You have typed more arguments and options than expected"
+    exit 2
+fi
+
+while [ ! -z $1 ]
+do
+    if [[ $1 == "--help" ]]
+    then
+	echo "This script prints out the first N (top size) files bigger than the specified size in the given directory and all its subdirectories"
+	echo " topsize --help -N -s size -h -- [dir]"
+	echo " --help      Prints out help and exit"
+	echo " -N          Number of files (N is a integer number)"
+	echo " -s          Minimal size of a file (next argument is the minimal size)"
+	echo " -h          Converts the size of the file into a human-readable size number"
+	echo " dir         Lookup direcory (its default value is the current working directory)"
+	echo " --          This script supports this separator of non-options and options arguments"
+	exit 0
+    elif [[ $1 == "-s" ]] && [[ $var_sign == false ]]
+    then
+	if [[ ! -z $2 ]]
+	then
+	    min_size=$2
+	    shift
+	else
+	    echo "ERROR"
+	    echo "There is one argument missing" >&2
+	    echo "./topsize [--help] [-h] [-N] [-s minsize] [--] [dir]"
+	    exit 2
+	fi
+    elif [[ $1 == "-h" ]] && [[ $var_sign == false ]]
+    then
+	human="-h"
+	human1="-h"
+    elif [[ $1 == "--" ]]
+    then
+	var_sign=true
+    elif [[ $1 == "-"* ]] && [[ $var_sign == false ]]
+    then
+	number_files=${1#-*}
+    else
+	if [[ $var_dir == false ]]
+	then
+	    directory=$1
+	    var_dir=true
+	else
+	    echo "ERROR"
+	    echo "You have typed more than one non-option argument (directory)" >&2
+	    exit 2
+	fi
+    fi
+    shift
+done
+
+if ! [[ $min_size =~ $comparison ]]
+then
+    echo "ERROR"
+    echo "You have filled an option ([-s minsize]) with a non-numeric argument" >&2
+    exit 2
+fi
+
+if [[ -d $directory ]]
+then
+    counter=false
+    if [[ ! -z $number_files ]]
+    then
+	#To see the answer of each change in piping
+	#Full piping:   find "$directory" -size +"$min_size"c | sort "$human1" -r | head -n"number_files" | while read file
+	echo "SIZE ------> FILE"
+	aux=`find "$directory" -size +"$min_size"c | head -n"$number_files"`
+	echo $aux
+    else
+	#To test in code with all numbers
+	#Here is without head command
+	echo "SIZE ------> FILE"
+	find "$directory" -size +"$min_size"c | sort -n -r | while read file
+	do
+	    echo $file
+	done
+    fi
+else
+    echo "ERROR"
+    echo "The directory '$directory' has not been found" >&2
+    exit 2
+fi
