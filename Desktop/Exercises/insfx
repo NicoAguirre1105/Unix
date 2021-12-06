@@ -9,7 +9,7 @@ find_command=("find")
 
 for i in "$@"
 do
-    if [[ "$i" == "-"* ]] && [[ -z $var_sign ]]
+    if [[ "$i" == "-"* ]]
     then
 	case $i in
 	-h)
@@ -68,7 +68,6 @@ done
 
 if [[ -d $directory ]]
 then
-	echo ${find[@]}
     "${find_command[@]}" | sort -u | while read file
 	do
 	    aux=${file##*"/"}
