@@ -51,8 +51,9 @@ do
 	elif [[ -z $directory ]]
 	then
 	    directory=$i
+	    find_command+=("$directory")
 	else
-	    if [[ ${#find_command[@]} -gt 1 ]]
+	    if [[ ${#find_command[@]} -gt 2 ]]
 	    then
 		find_command+=("-o")
 	    fi
@@ -67,6 +68,7 @@ done
 
 if [[ -d $directory ]]
 then
+	echo ${find[@]}
     "${find_command[@]}" | sort -u | while read file
 	do
 	    aux=${file##*"/"}
