@@ -2,8 +2,7 @@
 
 number_files=
 min_size=1
-human="-b"
-human1="-n"
+human=
 directory=`pwd`
 var_sign=false
 var_dir=false
@@ -44,8 +43,7 @@ do
 	fi
     elif [[ $1 == "-h" ]] && [[ $var_sign == false ]]
     then
-	human="-h"
-	human1="-h"
+	human=1
     elif [[ $1 == "--" ]]
     then
 	var_sign=true
@@ -78,19 +76,22 @@ then
     counter=false
     if [[ ! -z $number_files ]]
     then
-	#To see the answer of each change in piping
 	#Full piping:   find "$directory" -size +"$min_size"c | sort "$human1" -r | head -n"number_files" | while read file
 	echo "SIZE ------> FILE"
-	aux=`find "$directory" -size +"$min_size"c | head -n"$number_files"`
-	echo $aux
+	if [[ -z $human ]]
+	then
+		find "$directory" -size +"$min_size"c"" -printf "%s   %p \n" | sort -nr | head -n"$number_files"
+	else
+		find "$directory" -size +"$min_size"c"" -printf "%s   %p \n" | numfmt --to=iec | sort -hr | head -n"$number_files"
+	fi
     else
-	#To test in code with all numbers
-	#Here is without head command
 	echo "SIZE ------> FILE"
-	find "$directory" -size +"$min_size"c | sort -n -r | while read file
-	do
-	    echo $file
-	done
+	if [[ -z $human ]]
+	then
+		find "$directory" -size +"$min_size"c"" -printf "%s   %p \n" | sort -nr
+	else
+		find "$directory" -size +"$min_size"c"" -printf "%s   %p \n" | numfmt --to=iec | sort -hr 
+	fi
     fi
 else
     echo "ERROR"
