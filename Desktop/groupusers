@@ -30,6 +30,8 @@ then
     direc=`grep "^$groupname:" "$file_" | cut -d':' -f4`
     echo "USERS from $groupname group are: "
     echo "$direc" | sed s/,/\\n/g
+    exit 0
 else
     echo "ERROR file does not exist" >&2
+    exit 2
 fi
