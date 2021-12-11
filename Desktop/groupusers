@@ -1,0 +1,35 @@
+#!/bin/bash
+
+file_="/etc/group"
+groupname=
+
+while [ ! -z $1 ]
+do
+    if [ "$1" == "-"* ]
+    then
+	if [ "$1" == "-f" ] && [ ! -z "$2" ]
+	then
+	     file_="$2"
+	else
+	    echo "ERROR" >&2
+	fi
+    else
+	groupname="$1"
+    fi
+    shift
+done
+
+if [ -z $groupname ]
+then
+    echo "ERROR no group name assigned" >&2
+    exit 2
+fi
+
+if [ -f $file_ ]
+then
+    direc=`grep "^$groupname:" "$file_" | cut -d':' -f4`
+    echo "USERS from $groupname group are: "
+    echo "$direc" | sed s/,/\\n/g
+else
+    echo "ERROR file does not exist" >&2
+fi
